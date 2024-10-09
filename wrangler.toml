@@ -1,0 +1,29 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "subscription"
+main = "src/index.ts"
+compatibility_date = "2024-10-04"
+
+[observability]
+enabled = true
+
+[[kv_namespaces]]
+binding = "SUBSCRIPTION_KV"
+id = "6047844147f54cdf8322a263b42e9981"
+
+[[kv_namespaces]]
+binding = "CUSTOMER_KV"
+id = "8e0deda6968d445ea6cf8b8223410727"
+
+[env.dev]
+vars.INVOICE_WORKER_URL = "http://localhost:34889/api/v0.1"
+kv_namespaces = [
+    { binding = "SUBSCRIPTION_KV", id = "6047844147f54cdf8322a263b42e9981" },
+    { binding = "CUSTOMER_KV", id = "8e0deda6968d445ea6cf8b8223410727" }
+]
+
+[env.production]
+vars.INVOICE_WORKER_URL = "https://billing-engine.azam-arid1144.workers.dev/api/v0.1"
+kv_namespaces = [
+    { binding = "SUBSCRIPTION_KV", id = "6047844147f54cdf8322a263b42e9981" },
+    { binding = "CUSTOMER_KV", id = "8e0deda6968d445ea6cf8b8223410727" }
+]
