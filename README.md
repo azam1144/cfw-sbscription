@@ -12,7 +12,7 @@ The Subscription Worker is responsible for managing subscription plans and handl
 
 1. Clone the repository:
    ```bash  
-   git clone <REPOSITORY_URL>  
+   git clone https://github.com/azam1144/cfw-sbscription.git  
    cd subscription  
    
 2. Install dependencies:
