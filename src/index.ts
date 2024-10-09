@@ -17,12 +17,14 @@ import { AssociateService } from "./customer/services/associate.service";
 import { CronGenerateInvoice } from "./customer/services/cron-generate-invoice";
 import { ChangeSubscriptionStatusService } from "./customer/services/change-subscription-status.service";
 import { ChangeSubscriptionPlanService } from "./customer/services/change-subscription-plan.service";
+import { StaticTypesService } from "./subscription/services/static-types.service";
 
 const app = new Hono();
 const openapi = fromHono(app, {
 	docs_url: "/",
 });
 
+openapi.get("/api/v0.1/subscription/static-enums", StaticTypesService);
 openapi.get("/api/v0.1/subscription", SubscriptionListService);
 openapi.post("/api/v0.1/subscription", SubscriptionCreateService);
 openapi.get("/api/v0.1/subscription/one/:id", SubscriptionOneService);
