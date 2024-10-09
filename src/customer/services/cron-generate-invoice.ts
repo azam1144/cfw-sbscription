@@ -5,32 +5,30 @@ import { Customer } from "../entities/customer.entity";
 import { customerSubscriptionStatus } from "../const/customer-subscription-status";
 
 const generateInvoice = new GenerateInvoice();
+
 export class CronGenerateInvoice extends OpenAPIRoute {
+    // Handle the cron job for generating invoices for active subscribers
     async handle(context) {
+        // Retrieve all customer keys from the database
         const keys = await context.env.CUSTOMER_KV.list();
-        console.log('keys: ', keys.keys);
 
+        // Get the list of active subscribers
         const subscribers = await this.getActiveSubscribers(context, keys.keys);
-        console.log('subscribers: ', subscribers);
 
+        // Process each active subscriber
         for (const subscriber of subscribers) {
-
             const planId = subscriber['subscriptionPlanId'];
-            console.log('planId: ', planId);
-
             const existingPlan = await context.env.SUBSCRIPTION_KV.get(planId);
-            console.log('existingPlan: ', existingPlan);
+
             if (existingPlan) {
                 const parsedPlan = JSON.parse(existingPlan);
-                console.log('parsedPlan: ', parsedPlan);
-
-                // Perform two operations
-                // 1. Create invoice
-                // 2. charge user immediately
+                // Generate invoice and charge user immediately
                 const processPayment = true;
                 await generateInvoice.generate(context, parsedPlan, subscriber, processPayment);
             }
         }
+
+        // Return success response indicating the operation was completed
         return context.json({
             success: true,
             result: {
@@ -41,23 +39,28 @@ export class CronGenerateInvoice extends OpenAPIRoute {
         }, 201);
     }
 
+    // Retrieve active subscribers based on their subscription status and billing date
     private async getActiveSubscribers(context, subscribers: any): Promise<Customer[]> {
         const customers: Customer[] = [];
+
+        // Check each subscriber for active status and valid billing date
         for (const key of subscribers) {
             const customer = await context.env.CUSTOMER_KV.get(key.name);
             if (customer) {
                 const parsed = JSON.parse(customer) as Customer;
                 const status = parsed['subscriptionStatus'];
                 const billingEndDate = parsed.billingCycleEndDate;
+
+                // Determine if the customer is active and their billing date is valid
                 if (
                     (status === customerSubscriptionStatus.ACTIVE || status === customerSubscriptionStatus.RESUMED) &&
-                    billingEndDate && moment().toISOString() >=  moment(billingEndDate?.toString()).toISOString()
+                    billingEndDate && moment().isSameOrAfter(moment(billingEndDate?.toString()))
                 ) {
                     customers.push(parsed);
                 }
             }
         }
 
-        return customers;
+        return customers; // Return the list of active subscribers
     }
 }
